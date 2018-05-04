@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Deploy From Eclipse to JBoss" basedir="." default="deploy">
+	<property name="warfile" value="#FILE_NAME#" />
+	<property name="deploy" value="#TARGET_DIR#" />
+	<target name="init">
+		<mkdir dir="deploy"/>
+		<mkdir dir="WebContent/WEB-INF/lib"/>
+		#DEPENDENCIES#
+	</target>
+	<target name="create">
+		<war destfile="${warfile}.war" webxml="WebContent/WEB-INF/web.xml" update="true" duplicate="preserve">
+			<classes dir="#BIN_DIR#" />
+			<fileset dir="WebContent">
+				<exclude name="WEB-INF/web.xml" />
+			</fileset>
+		</war>
+	</target>
+	<target name="copy">
+		<copy todir="${deploy}" overwrite="true">
+			<fileset dir=".">
+				<include name="${warfile}.war" />
+			</fileset>
+		</copy>
+	</target>
+	<target name="clear">
+		<delete includeemptydirs="true">
+			<fileset dir="${deploy}" defaultexcludes="false">
+				<include name="${warfile}.*/**" />
+			</fileset>
+		</delete>
+	</target>
+	<target name="deploy">
+		<antcall target="init" />
+		<antcall target="create" />
+		<antcall target="clear" />
+		<antcall target="copy" />
+	</target>
+</project>

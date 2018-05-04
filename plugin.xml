@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.exportWizards">
+      <wizard
+            category="org.eclipse.jdt.ui.Java"
+            class="ide.export.war.ExportWebArchiveWizard"
+            icon="icons/war.png"
+            id="ide.export.war.ExportWebArchiveWizard"
+            name="Java Web Archive">
+         <description>
+            Export all resources required to run an application into a WAR file on a Java application server.
+         </description>
+      </wizard>
+   </extension>
+
+</plugin>
