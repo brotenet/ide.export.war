@@ -207,7 +207,7 @@ public class ExportWebArchiveComposite extends Composite {
 		for(JSONObject classpath_entry : project_information.getJSONObject("classpath").getJSONArray("classpathentry").toArray(JSONObject.class)) {
 			if(classpath_entry.has("kind")) {
 				if(classpath_entry.getString("kind").equalsIgnoreCase("lib")) {
-					output = output + "<copy file=\"" + classpath_entry.getString("path") + "\" todir=\".WebContent/WEB-INF/lib\"/>" + Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR);
+					output = output + "<copy file=\"" + classpath_entry.getString("path") + "\" todir=\"WebContent/WEB-INF/lib\"/>" + Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR);
 				}
 			}
 		}
