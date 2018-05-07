@@ -152,7 +152,7 @@ public class ExportWebArchiveComposite extends Composite {
 							tags.put("FILE_NAME", txtFileName.getText().trim());
 							tags.put("TARGET_DIR", txtTargetDir.getText().trim());
 							tags.put("BIN_DIR", getBuildDir(project_information));
-							build_file_data = JSONStringUtility.updateHashTags(build_file_data, tags);
+							build_file_data = JSONStringUtility.updateHashTags(build_file_data.replaceAll("<ESC>",  "").replaceAll("</ESC>", ""), tags);
 							log.setText(log.getText() + Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR) + "Preparing build project...");
 							Project project = new Project();
 							log.setText(log.getText() + Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR) + "Creating build file...");

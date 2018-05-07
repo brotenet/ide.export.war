@@ -5,7 +5,7 @@
 	<target name="init">
 		<mkdir dir="deploy"/>
 		<mkdir dir="WebContent/WEB-INF/lib"/>
-		#DEPENDENCIES#
+		<ESC>#DEPENDENCIES#</ESC>
 	</target>
 	<target name="create">
 		<war destfile="${warfile}.war" webxml="WebContent/WEB-INF/web.xml" update="true" duplicate="preserve">
