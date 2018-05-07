@@ -4,29 +4,22 @@ import java.io.File;
 
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
-import org.eclipse.jdt.internal.core.nd.db.BTree;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.environment.Environment;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 import org.json.JSONObject;
 import org.json.util.generic.JSONStringUtility;
-import org.omg.CORBA.NVList;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.custom.CLabel;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.graphics.Image;
 
 public class ExportWebArchiveComposite extends Composite {
 
@@ -52,7 +45,7 @@ public class ExportWebArchiveComposite extends Composite {
 		super(parent, SWT.NONE);
 		project_information = Activator.getProjectInformation();
 		deployment_dir = project_information.getString("project_full_path") + Environment.getProperty(Environment.PROPERTY_FILE_SEPARATOR) + "deploy";
-		build_file_data = Environment.Resources.getStringFromResource("/ide/export/war/build.file");
+		build_file_data = Environment.Resources.getStringFromResource("/ide/export/war/build.xml");
 		build_file_path = project_information.getString("project_full_path") + Environment.getProperty(Environment.PROPERTY_FILE_SEPARATOR) + "build.xml";
 		if(project_information.has("properties")) {
 			if(project_information.getJSONObject("properties").has("projectDescription")) {
@@ -194,7 +187,7 @@ public class ExportWebArchiveComposite extends Composite {
 							log.setText(log.getText() + Environment.getProperty(Environment.PROPERTY_FILE_SEPARATOR) + exception.toString());
 						}
 					}else {
-						getShell().close();
+						getShell().getParent().getShell().close();
 					}
 				}
 			}

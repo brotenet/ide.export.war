@@ -8,7 +8,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 
-@SuppressWarnings("restriction")
 public class ExportWebArchiveWizard extends Wizard implements IExportWizard{
 
 	@Override
