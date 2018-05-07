@@ -1,32 +1,28 @@
 package ide.export.war;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.eclipse.core.internal.resources.File;
 import org.eclipse.core.internal.resources.Folder;
 import org.eclipse.core.internal.resources.Project;
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.internal.core.PackageFragment;
 import org.eclipse.jdt.internal.core.PackageFragmentRoot;
-import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.IWizardContainer;
+import org.eclipse.swt.environment.Environment;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISelectionService;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.json.JSONArray;
@@ -41,8 +37,20 @@ import org.osgi.framework.BundleContext;
 public class Activator extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "ide.export.war"; //$NON-NLS-1$
-
+	public static final String PLUGIN_ID = "ide.project.builders"; //$NON-NLS-1$
+	
+	// The Eclipse workspace directory path
+	public static final String WORKSPACE_DIR = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
+		
+	// The plugin directory path in the workspace
+	public static final String PLUGIN_WORKSPACE_DIR = WORKSPACE_DIR + 
+			Environment.getProperty(Environment.PROPERTY_FILE_SEPARATOR) + ".metadata" + 
+			Environment.getProperty(Environment.PROPERTY_FILE_SEPARATOR) + "templates" + 
+			Environment.getProperty(Environment.PROPERTY_FILE_SEPARATOR) + "RWT";
+	
+	// The Project type templates description file
+	public static final String PROJECT_TYPES_FILE_PATH = PLUGIN_WORKSPACE_DIR + Environment.getProperty(Environment.PROPERTY_FILE_SEPARATOR) + "index.json";
+	
 	// The shared instance
 	private static Activator plugin;
 	
@@ -79,18 +87,84 @@ public class Activator extends AbstractUIPlugin {
 		return plugin;
 	}
 	
-	/**
-	 * Returns an image descriptor for the image file at the given
-	 * plug-in relative path
-	 *
-	 * @param path the path
-	 * @return the image descriptor
-	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
 	
-	public static String getSelectionPackage(Object selection) {
+	public static ErrorDialog getExceptionDialog(Shell parent, String title, String message, Throwable exception) {
+		Status status = new Status(IStatus.ERROR, PLUGIN_ID, message, exception);
+		return new ErrorDialog(parent, title, message, status, IStatus.ERROR);
+	}
+	
+	public static IProject getSelectedProject() {
+		try {
+			IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		    if (window != null)
+		    {
+		        IStructuredSelection selection = (IStructuredSelection) window.getSelectionService().getSelection();
+		        Object firstElement = selection.getFirstElement();
+		        if (firstElement instanceof IAdaptable)
+		        {
+		        	return (IProject)((IAdaptable)firstElement).getAdapter(IProject.class);
+		        }else {
+		        	return null;
+		        }
+		    }else {
+		    	return null;
+		    }
+		} catch (Exception exception) {
+			return null;
+		}
+	}
+	
+	public static String getSelectedProjectName() {
+		try {
+			return getSelectedProject().getName();
+		} catch (Exception exception) {
+			return "";
+		}
+	}
+	
+	public static String getSelectedProjectWorkspacePath() {
+		try {
+			return String.valueOf(getSelectedProject().getFullPath());
+		} catch (Exception exception) {
+			return "";
+		}		
+	}
+	
+	public static String getSelectedProjectPhysicalPath() {
+		try {
+			return String.valueOf(getSelectedProject().getLocation());
+		} catch (Exception exception) {
+			return "";
+		}		
+	}
+	
+	public static String updateTagVariables(String input) {
+		return input.replaceAll("#WORKSPACE_DIR#", Activator.WORKSPACE_DIR)
+				.replaceAll("#PLUGIN_WORKSPACE_DIR#", Activator.PLUGIN_WORKSPACE_DIR)
+				.replaceAll("#PROJECT_TYPES_FILE_PATH#", Activator.PROJECT_TYPES_FILE_PATH)
+				.replaceAll("#SELECTED_PROJECT_NAME#", Activator.getSelectedProjectName())
+				.replaceAll("#SELECTED_PROJECT_WORKSPACE_PATH#", Activator.getSelectedProjectWorkspacePath())
+				.replaceAll("#SELECTED_PROJECT_PHYSICAL_PATH#", Activator.getSelectedProjectPhysicalPath())
+				.replaceAll("#PROPERTY_FILE_SEPARATOR#", Environment.getProperty(Environment.PROPERTY_FILE_SEPARATOR))
+				.replaceAll("#PROPERTY_JAVA_CLASS_PATH#", Environment.getProperty(Environment.PROPERTY_JAVA_CLASS_PATH))
+				.replaceAll("#PROPERTY_JAVA_HOME#", Environment.getProperty(Environment.PROPERTY_JAVA_HOME))
+				.replaceAll("#PROPERTY_JAVA_VENDOR#", Environment.getProperty(Environment.PROPERTY_JAVA_VENDOR))
+				.replaceAll("#PROPERTY_JAVA_VENDOR_URL#", Environment.getProperty(Environment.PROPERTY_JAVA_VENDOR_URL))
+				.replaceAll("#PROPERTY_JAVA_VERSION#", Environment.getProperty(Environment.PROPERTY_JAVA_VERSION))
+				.replaceAll("#PROPERTY_LINE_SEPARATOR#", Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR))
+				.replaceAll("#PROPERTY_OS_ARCH#", Environment.getProperty(Environment.PROPERTY_OS_ARCH))
+				.replaceAll("#PROPERTY_OS_NAME#", Environment.getProperty(Environment.PROPERTY_OS_NAME))
+				.replaceAll("#PROPERTY_OS_VERSION#", Environment.getProperty(Environment.PROPERTY_OS_VERSION))
+				.replaceAll("#PROPERTY_PATH_SEPARATOR#", Environment.getProperty(Environment.PROPERTY_PATH_SEPARATOR))
+				.replaceAll("#PROPERTY_USER_DIR#", Environment.getProperty(Environment.PROPERTY_USER_DIR))
+				.replaceAll("#PROPERTY_USER_HOME#", Environment.getProperty(Environment.PROPERTY_USER_HOME))
+				.replaceAll("#PROPERTY_USER_NAME#", Environment.getProperty(Environment.PROPERTY_USER_NAME));
+	}
+
+public static String getSelectionPackage(Object selection) {
 		if (selection == null) {
 			selection = getSelection();
 		}
@@ -212,46 +286,8 @@ public class Activator extends AbstractUIPlugin {
 	public static IWorkspaceRoot getWorkspaceRoot() {
 		return ResourcesPlugin.getWorkspace().getRoot();
 	}
-	
-	public static void setProjectFile(String file_name, String container_path, InputStream contents, IWizardContainer wizard_container, ISelection selection) throws Exception {
-		@SuppressWarnings("unused")
-		IRunnableWithProgress progress = new IRunnableWithProgress() {
-			
-			@Override
-			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-				try {
-					monitor.beginTask("setProjectFile [" + file_name + "] ", 2);
-					String selection_path = getSelectionPath(selection);
-					
-					IResource resource = getWorkspaceRoot().findMember(selection_path);
-					if (!resource.exists() || !(resource instanceof IContainer)) {
-						throw new Exception("Container \"" + container_path + "\" does not exist.")	;
-					}else {
-						IContainer container = (IContainer) resource;
-						final IFile file = container.getFile(new Path(file_name));
-						if(file.exists()) {
-							file.setContents(contents, true,  true, monitor);
-						}else {
-							file.create(contents, true, monitor);
-						}
-						contents.close();
-					}
-					
-				} catch (Exception exception) {
-					try {
-						throw new Exception(exception.getMessage());
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				monitor.worked(1);
-			}
-		};
-		wizard_container.run(true, false, progress);
-	}
-	
-	public static void setProjectFile(String file_name, String container_path, String contents, IWizardContainer wizard_container, ISelection selection) throws Exception{
-		setProjectFile(file_name, container_path, new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8)), wizard_container, selection);
-	}
 
+	public static int getProjectsCount() {
+		return ResourcesPlugin.getWorkspace().getRoot().getProjects().length;
+	}
 }
