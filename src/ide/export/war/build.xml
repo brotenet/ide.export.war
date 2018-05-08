@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Deploy From Eclipse to JBoss" basedir="." default="deploy">
+<project name="Build Java web-archive" basedir="." default="deploy">
 	<property name="warfile" value="#FILE_NAME#" />
 	<property name="deploy" value="#TARGET_DIR#" />
 	<target name="init">

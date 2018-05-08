@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.internal.core.PackageFragment;
 import org.eclipse.jdt.internal.core.PackageFragmentRoot;
@@ -273,9 +274,7 @@ public static String getSelectionPackage(Object selection) {
 					output.getJSONArray("libraries").put(project_full_path + System.getProperty("file.separator") + entry.getString("path"));
 				}
 			}
-		} catch (Exception exception) {
-			exception.printStackTrace();
-		}
+		} catch (Exception ignore) {}
 		return output;
 	}
 	
@@ -289,5 +288,10 @@ public static String getSelectionPackage(Object selection) {
 
 	public static int getProjectsCount() {
 		return ResourcesPlugin.getWorkspace().getRoot().getProjects().length;
+	}
+	
+	public static void displayErrorDialog(Shell shell, Throwable exception) {
+		MultiStatus status = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR, exception.getMessage(), exception);
+		ErrorDialog.openError(shell, "Error", exception.getMessage(), status);
 	}
 }

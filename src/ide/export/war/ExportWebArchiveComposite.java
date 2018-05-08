@@ -184,7 +184,7 @@ public class ExportWebArchiveComposite extends Composite {
 							btnCancel.setVisible(false);
 							
 						}catch (Exception exception) {
-							log.setText(log.getText() + Environment.getProperty(Environment.PROPERTY_FILE_SEPARATOR) + exception.toString());
+							Activator.displayErrorDialog(getShell(), exception);
 						}
 					}else {
 						getShell().getParent().getShell().close();
