@@ -7,7 +7,7 @@ Features:
 * No need to have the Eclipse Java EE and Java Web developer-tools fetures installed.
 * Uses ANT and can also export the build.xml script for the application.
 
-Binary Download:  <a href="readme_resources/ide.export.war_1.0.0.201805122053.jar" download>ide.export.war_1.0.0.201805122053.jar</a>
+Binary Download:  <a href="https://github.com/brotenet/ide.export.war/raw/master/readme_resources/ide.export.war_1.0.0.201805122053.jar" download>ide.export.war_1.0.0.201805122053.jar</a>
 
 Installation: Place the ide.export.war_...jar file in Eclipse plugins directory
 
