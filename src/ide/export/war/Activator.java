@@ -1,5 +1,7 @@
 package ide.export.war;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -20,7 +22,10 @@ import org.eclipse.jdt.internal.core.PackageFragmentRoot;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.environment.Environment;
+import org.eclipse.swt.environment.WindowManager;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -30,6 +35,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.util.converters.XML;
 import org.osgi.framework.BundleContext;
+
+import ide.exceptions.ExceptionComposite;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -291,7 +298,10 @@ public static String getSelectionPackage(Object selection) {
 	}
 	
 	public static void displayErrorDialog(Shell shell, Throwable exception) {
-		MultiStatus status = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR, exception.getMessage(), exception);
-		ErrorDialog.openError(shell, "Error", exception.getMessage(), status);
+		Shell dialog = WindowManager.newShell(shell, true, false, true);
+		dialog.setSize(640, 480);
+		ExceptionComposite composite = new ExceptionComposite(dialog, exception.getMessage(), exception);
+		WindowManager.setLocation(dialog, WindowManager.LOCATION_MIDDLE_CENTER_TO_DISPLAY);
+		WindowManager.open(dialog);
 	}
 }

@@ -176,13 +176,10 @@ public class ExportWebArchiveComposite extends Composite {
 							Environment.FileSystem.delete(build_file_path);
 							Environment.FileSystem.delete(project_information.getString("project_full_path") + Environment.getProperty(Environment.PROPERTY_FILE_SEPARATOR) + txtFileName.getText() + ".war");
 							log.setText(log.getText() + Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR) + "Build Completed.");
-							
 							completed = true;
 							btnBuild.setText("Close");
 							btnBuild.setImage(Environment.Resources.getImageFromResource("/ide/export/war/exit.png"));
-							
 							btnCancel.setVisible(false);
-							
 						}catch (Exception exception) {
 							Activator.displayErrorDialog(getShell(), exception);
 						}
