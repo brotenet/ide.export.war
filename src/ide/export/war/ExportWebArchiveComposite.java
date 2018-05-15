@@ -7,6 +7,7 @@ import org.apache.tools.ant.ProjectHelper;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.environment.Environment;
+import org.eclipse.swt.environment.Environment.Session;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -44,9 +45,9 @@ public class ExportWebArchiveComposite extends Composite {
 	public ExportWebArchiveComposite(Composite parent) {
 		super(parent, SWT.NONE);
 		project_information = Activator.getProjectInformation();
-		deployment_dir = project_information.getString("project_full_path") + Environment.getProperty(Environment.PROPERTY_FILE_SEPARATOR) + "deploy";
+		deployment_dir = project_information.getString("project_full_path") + Session.FileSeparator() + "deploy";
 		build_file_data = Environment.Resources.getStringFromResource("/ide/export/war/build.xml");
-		build_file_path = project_information.getString("project_full_path") + Environment.getProperty(Environment.PROPERTY_FILE_SEPARATOR) + "build.xml";
+		build_file_path = project_information.getString("project_full_path") + Session.FileSeparator() + "build.xml";
 		if(project_information.has("properties")) {
 			if(project_information.getJSONObject("properties").has("projectDescription")) {
 				if(project_information.getJSONObject("properties").getJSONObject("projectDescription").has("name")) {
@@ -110,7 +111,7 @@ public class ExportWebArchiveComposite extends Composite {
 		log = new Text(grpLogMonitor, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
 		log.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		log.setEditable(false);
-		log.setText("The application will be packaged with the following dependencies:" + Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR) + project_information.getJSONArray("libraries").toString(1));
+		log.setText("The application will be packaged with the following dependencies:" + Session.LineSeparator() + project_information.getJSONArray("libraries").toString(1));
 		
 		composite = new Composite(this, SWT.NONE);
 		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1));
@@ -141,7 +142,7 @@ public class ExportWebArchiveComposite extends Composite {
 				if(txtFileName.getText().trim().length() < 1 || txtTargetDir.getText().trim().length() < 1) {
 					MessageBox message = new MessageBox(getShell(), SWT.ICON_WARNING);
 					message.setText("Invalid Input");
-					message.setMessage("'Archive Name' and/or 'Output Directory' are invalid." + Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR) + "Please review before build.");
+					message.setMessage("'Archive Name' and/or 'Output Directory' are invalid." + Session.LineSeparator() + "Please review before build.");
 					message.open();
 				}else {
 					if(completed == false) {
@@ -153,29 +154,32 @@ public class ExportWebArchiveComposite extends Composite {
 							tags.put("TARGET_DIR", txtTargetDir.getText().trim());
 							tags.put("BIN_DIR", getBuildDir(project_information));
 							build_file_data = JSONStringUtility.updateHashTags(build_file_data.replaceAll("<ESC>",  "").replaceAll("</ESC>", ""), tags);
-							log.setText(log.getText() + Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR) + "Preparing build project...");
+							log.setText(log.getText() + Session.LineSeparator() + "Preparing build project...");
 							Project project = new Project();
-							log.setText(log.getText() + Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR) + "Creating build file...");
+							log.setText(log.getText() + Session.LineSeparator() + "Creating build file...");
 							Environment.FileSystem.delete(build_file_path);
 							Environment.FileSystem.touch(build_file_path, build_file_data);
-							log.setText(log.getText() + Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR) + "Loading build file...");
+							log.setText(log.getText() + Session.LineSeparator() + "Loading build file...");
 							project.setUserProperty("ant.file", build_file_path);
 							project.init();
-							log.setText(log.getText() + Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR) + "Creating build helper...");
+							log.setText(log.getText() + Session.LineSeparator() + "Creating build helper...");
 							ProjectHelper helper = ProjectHelper.getProjectHelper();
 							project.addReference("ant.projectHelper", helper);
 							helper.parse(project, new File(build_file_path));
-							log.setText(log.getText() + Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR) + "Building web archive...");
+							log.setText(log.getText() + Session.LineSeparator() + "Building web archive...");
 							project.executeTarget(project.getDefaultTarget());
 							if(txtKeepBuildFile.getSelection() == false) {
 								Environment.FileSystem.delete(build_file_path);
 							}else {
-								Environment.FileSystem.copy(build_file_path, tags.getString("TARGET_DIR") + Environment.getProperty(Environment.PROPERTY_FILE_SEPARATOR) + "build.xml");
+								Environment.FileSystem.copy(build_file_path, tags.getString("TARGET_DIR") + Session.FileSeparator() + "build.xml");
+								Environment.FileSystem.delete(build_file_path);
 							}
-							log.setText(log.getText() + Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR) + "Cleaning up...");
-							Environment.FileSystem.delete(build_file_path);
-							Environment.FileSystem.delete(project_information.getString("project_full_path") + Environment.getProperty(Environment.PROPERTY_FILE_SEPARATOR) + txtFileName.getText() + ".war");
-							log.setText(log.getText() + Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR) + "Build Completed.");
+							log.setText(log.getText() + Session.LineSeparator() + "Cleaning up...");
+							Environment.FileSystem.delete(project_information.getString("project_full_path") + Session.FileSeparator() + txtFileName.getText() + ".war");
+							log.setText(log.getText() + Session.LineSeparator() + "Build Completed.");
+							if(Environment.FileSystem.list(deployment_dir , null, null, null, null, true, false, false).length < 1) {
+								Environment.FileSystem.delete(deployment_dir);
+							}
 							completed = true;
 							btnBuild.setText("Close");
 							btnBuild.setImage(Environment.Resources.getImageFromResource("/ide/export/war/exit.png"));
@@ -197,7 +201,7 @@ public class ExportWebArchiveComposite extends Composite {
 		for(JSONObject classpath_entry : project_information.getJSONObject("classpath").getJSONArray("classpathentry").toArray(JSONObject.class)) {
 			if(classpath_entry.has("kind")) {
 				if(classpath_entry.getString("kind").equalsIgnoreCase("lib")) {
-					output = output + "<copy file=\"" + classpath_entry.getString("path") + "\" todir=\"WebContent/WEB-INF/lib\"/>" + Environment.getProperty(Environment.PROPERTY_LINE_SEPARATOR);
+					output = output + "<copy file=\"" + classpath_entry.getString("path") + "\" todir=\"WebContent/WEB-INF/lib\"/>" + Session.LineSeparator();
 				}
 			}
 		}
